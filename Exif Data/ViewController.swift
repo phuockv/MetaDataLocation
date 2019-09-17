@@ -22,21 +22,10 @@ class ViewController: UIViewController {
 
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		let image  = UIImage.init(named: "ppppp")
-		
-		
-		
-		
 		locationManager = CLLocationManager()
 		//locationManager.delegate = self as! CLLocationManagerDelegate
 		locationManager?.requestAlwaysAuthorization()
-		
 		view.backgroundColor = .gray
-		
-//demo(beach: image!)
-		
-		
-		
 		//Do any additional setup after loading the view, typically from a nib.
 	}
 	
@@ -47,44 +36,8 @@ class ViewController: UIViewController {
 		vc.allowsEditing = true
 		vc.delegate = self
 		present(vc, animated: true)
-		
 	}
-	
-	func demo(beach: UIImage) {
-		
-		let imageData: Data = beach.jpegData(compressionQuality:1.0)!
-		
-		let cgImgSource: CGImageSource = CGImageSourceCreateWithData(imageData as CFData, nil)!
-		let uti: CFString = CGImageSourceGetType(cgImgSource)!
-		let dataWithEXIF: NSMutableData = NSMutableData(data: imageData)
-		let destination: CGImageDestination = CGImageDestinationCreateWithData((dataWithEXIF as CFMutableData), uti, 1, nil)!
-		
-		
-		let imageProperties = CGImageSourceCopyPropertiesAtIndex(cgImgSource, 0, nil)! as NSDictionary
-		let mutable: NSMutableDictionary = imageProperties.mutableCopy() as! NSMutableDictionary
-		
-		let EXIFDictionary: NSMutableDictionary = (mutable[kCGImagePropertyExifDictionary as String] as? NSMutableDictionary)!
-		
-		print("before modification \(EXIFDictionary)")
-		
-		EXIFDictionary[kCGImagePropertyExifUserComment as String] = "type:video  ppp"
-		
-		if #available(iOS 11.3, *) {
-			EXIFDictionary[kCGImagePropertyIPTCExtLocationGPSLatitude as String] = "10° 47' 57.87"
-		} else {
-			// Fallback on earlier versions
-		}
-		
-		mutable[kCGImagePropertyExifDictionary as String] = EXIFDictionary
-		
-		CGImageDestinationAddImageFromSource(destination, cgImgSource, 0, (mutable as CFDictionary))
-		CGImageDestinationFinalize(destination)
-		
-		let testImage: CIImage = CIImage(data: dataWithEXIF as Data, options: nil)!
-		let newproperties: NSDictionary = testImage.properties as NSDictionary
-		
-		print("after modification \(newproperties)")
-	}
+
 }
 
 extension ViewController: UINavigationControllerDelegate, UIImagePickerControllerDelegate {
@@ -101,12 +54,8 @@ extension ViewController: UINavigationControllerDelegate, UIImagePickerControlle
 		if let imageData = image.jpegData(compressionQuality: 1.0), let metadata = locationManager!.location?.exifMetadata() {
 			if let newImageData = addImageProperties(imageData: imageData, properties: metadata) {
 				// newImageData now contains exif metadata
-				
-				
 			}
 		}
-		
-		
 		dismiss(animated: true, completion:nil) // hide picker when done w/it.
 	}
 	
@@ -152,30 +101,6 @@ extension ViewController: UINavigationControllerDelegate, UIImagePickerControlle
 		
 	}
 	
-	func fetchLastImage(completion: (_ localIdentifier: String?) -> Void)
-	{
-		let fetchOptions = PHFetchOptions()
-		fetchOptions.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-		fetchOptions.fetchLimit = 1
-		
-		let fetchResult = PHAsset.fetchAssets(with: .image, options: fetchOptions)
-		if (fetchResult.firstObject != nil)
-		{
-			let lastImageAsset: PHAsset = fetchResult.firstObject as! PHAsset
-			completion(lastImageAsset.localIdentifier)
-		}
-		else
-		{
-			completion(nil)
-		}
-	}
-	
-	func getDocumentsDirectory() -> String {
-		let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-		print(paths)
-		return (paths.first?.path)!
-	}
-	
 	func saveImage(withMetadata image: UIImage, metadata: NSDictionary) {
 		
 		guard let documentPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.path else {
@@ -193,11 +118,8 @@ extension ViewController: UINavigationControllerDelegate, UIImagePickerControlle
 		guard let destination = CGImageDestinationCreateWithData(finalData, uniformTypeIdentifier, 1, nil) else { return }
 		CGImageDestinationAddImageFromSource(destination, source, 0, metadata)
 		guard CGImageDestinationFinalize(destination) else { return }
-		
-	
+
 		print(filePath)
-		
-		
 		finalData.write(toFile: filePath, atomically: true)
 	}
 }
